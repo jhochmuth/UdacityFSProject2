@@ -1,14 +1,17 @@
 import unittest
 from flaskr import create_app
-from models import setup_db
+from models import db, Question
 import json
 
+
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
 
 class TriviaTestCase(unittest.TestCase):
   def setUp(self):
     self.app = create_app()
     self.client = self.app.test_client
-    self.database_path = "postgresql://postgres:password@localhost:5432/trivia"
+    self.database_path = 'postgresql://{}:{}@localhost:5432/trivia'.format(DB_USER, DB_PASS)
 
   def tearDown(self):
     pass
@@ -44,11 +47,16 @@ class TriviaTestCase(unittest.TestCase):
     self.assertEqual(res.status_code, 400)
 
   def test_create_question(self):
+    table_size = len(Question.query.all())
+    
     question_data = {'question': '???', 'answer': 'No', 'difficulty': 1, 'category': 1}
     res = self.client().post('/add', json=question_data)
     data = json.loads(res.data)
 
     self.assertEqual(res.status_code, 200)
+  
+    new_table_size = len(Question.query.all())
+    self.assertEqual(new_table_size, table_size + 1)
 
   def test_create_question_fail(self):
     question_data = {'question': '???', 'answer': 'No'}
@@ -57,9 +65,19 @@ class TriviaTestCase(unittest.TestCase):
     self.assertEqual(res.status_code, 400)
   
   def test_delete_question(self):
-    res = self.client().delete('/questions/1')
+    question = Question(question="blah", answer="blah", difficulty=1, category=1)
+    db.session.add(question)
+    db.session.commit()
+  
+    id = question.id
+    table_size = len(Question.query.all())
+    
+    res = self.client().delete('/questions/{}'.format(id))
 
     self.assertEqual(res.status_code, 200)
+    
+    new_table_size = len(Question.query.all())
+    self.assertEqual(table_size - 1, new_table_size)
 
   def test_delete_question_fail(self):
     res = self.client().delete('/questions/100000')

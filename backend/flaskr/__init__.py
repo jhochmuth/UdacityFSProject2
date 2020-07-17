@@ -71,7 +71,6 @@ def create_app(test_config=None):
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
     question = Question.query.filter_by(id=question_id).first()
-    print(question)
 
     if question is None:
       abort(404)
@@ -113,7 +112,6 @@ def create_app(test_config=None):
 
   @app.route('/quizzes', methods=['POST'])
   def quiz():
-    print(request.get_json())
     try:
       category_id = request.get_json()['quiz_category']['id']
       previous_questions = request.get_json()['previous_questions']
