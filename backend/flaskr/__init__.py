@@ -9,14 +9,13 @@ from models import db, setup_db, Question, Category
 QUESTIONS_PER_PAGE = 10
 
 def create_app(test_config=None):
-  # create and configure the app
   app = Flask(__name__)
   setup_db(app)
   CORS(app, resources={r"/api/*": {"origins": "*"}})
 
   @app.after_request
   def after_request(response):
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
     response.headers.add('Access-Control-Allow-Methods', 'GET, POST, DELETE')
     return response
 
@@ -35,7 +34,11 @@ def create_app(test_config=None):
     start = (page - 1) * 10
     end = start + 10
     questions = Question.query.all()
-    formatted_questions = [question.format() for question in questions]
+
+    formatted_questions = [question.format() for question in questions[start:end]]
+    
+    if len(formatted_questions) == 0:
+        abort(404)
 
     categories = Category.query.all()
     formatted_categories = dict()
@@ -44,14 +47,18 @@ def create_app(test_config=None):
 
     return jsonify({
       'success': True,
-      'questions': formatted_questions[start:end],
-      'total_questions': len(formatted_questions),
+      'questions': formatted_questions,
+      'total_questions': len(questions),
       'categories': formatted_categories
     })
 
   @app.route('/questions', methods=['POST'])
   def search_questions():
-    search_term = request.get_json()['searchTerm']
+    try:
+      search_term = request.get_json()['searchTerm']
+    except:
+      abort(400)
+    
     query = Question.query.filter(Question.question.contains(search_term)).all()
     formatted_questions = [question.format() for question in query]
 
@@ -63,25 +70,40 @@ def create_app(test_config=None):
 
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
-    Question.query.filter_by(id=question_id).delete()
+    question = Question.query.filter_by(id=question_id).first()
+    print(question)
+
+    if question is None:
+      abort(404)
+
+    question.delete()
     db.session.commit()
     return jsonify({'success': True})
 
-  @app.route('/questions', methods=['POST'])
+  @app.route('/add', methods=['POST'])
   def create_question():
-    data = request.get_json()
-    question = Question(question=data['question'],
-                        answer=data['answer'],
-                        difficulty=data['difficulty'],
-                        category=data['category'])
-    db.session.add(question)
-    db.session.commit()
+    try:
+      data = request.get_json()
+      question = Question(question=data['question'],
+                          answer=data['answer'],
+                          difficulty=data['difficulty'],
+                          category=data['category'])
+      db.session.add(question)
+      db.session.commit()
+    except:
+      abort(400)
+
     return jsonify({'success': True})
 
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_questions_by_category(category_id):
     query = Question.query.filter_by(category=category_id).all()
+    
+    if len(query) == 0:
+      abort(404)
+    
     formatted_questions = [question.format() for question in query]
+
     return jsonify({
       'success': True,
       'questions': formatted_questions,
@@ -89,22 +111,57 @@ def create_app(test_config=None):
       'current_category': category_id
     })
 
-  '''
-  @TODO:
-  Create a POST endpoint to get questions to play the quiz.
-  This endpoint should take category and previous question parameters
-  and return a random questions within the given category,
-  if provided, and that is not one of the previous questions.
+  @app.route('/quizzes', methods=['POST'])
+  def quiz():
+    print(request.get_json())
+    try:
+      category_id = request.get_json()['quiz_category']['id']
+      previous_questions = request.get_json()['previous_questions']
+    except:
+      abort(400)
 
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not.
-  '''
+    if category_id == 0:
+      question = Question.query.filter(~Question.id.in_(previous_questions)).first()
+      if question is None:
+        abort(404)
+    else:
+      question = Question.query.filter_by(category=category_id).filter(~Question.id.in_(previous_questions)).first()
 
-  '''
-  @TODO:
-  Create error handlers for all expected errors
-  including 404 and 422.
-  '''
+    if question:
+      question = question.format()
+
+    return jsonify({'success': True, 'question': question})
+
+  @app.errorhandler(400)
+  def bad_request(error):
+    return jsonify({
+      'success': False,
+      'error': 400,
+      'message': "Bad request."
+    }), 400
+
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+      'success': False,
+      'error': 404,
+      'message': "Page not found."
+    }), 404
+
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({
+      'success': False,
+      'error': 422,
+      'message': "Unprocessable entity."
+    }), 422
+
+  @app.errorhandler(500)
+  def internal_error(error):
+    return jsonify({
+      'success': False,
+      'error': 500,
+      'message': "Internal server error."
+    }), 500
 
   return app

@@ -1,44 +1,119 @@
-# Full Stack API Final Project
+# Full Stack Udacity Project 2: Trivia
 
-## Full Stack Trivia
+## Usage
+CD into the backend folder. Create a virtual environment and install the required backend dependencies by running ```pip install -r requirements.txt```. Restore a database with psql running by running ```psql trivia < trivia.psql```. Then run these commands to run the server:
 
-Udacity is invested in creating bonding experiences for its employees and students. A bunch of team members got the idea to hold trivia on a regular basis and created a  webpage to manage the trivia app and play the game, but their API experience is limited and still needs to be built out. 
+```export FLASK_APP=flaskr
+export FLASK_ENV=development
+flask run
+```
 
-That's where you come in! Help them finish the trivia app so they can start holding trivia and seeing who's the most knowledgeable of the bunch. The application must:
+In another terminal, cd into the frontend folder. Install the required dependencies by running ```npm install```. Then start the client by running ```npm start```.
 
-1) Display questions - both all questions and by category. Questions should show the question, category and difficulty rating by default and can show/hide the answer. 
-2) Delete questions.
-3) Add questions and require that they include question and answer text.
-4) Search for questions based on a text query string.
-5) Play the quiz game, randomizing either all questions or within a specific category. 
+The app will now be running at localhost:3000.
 
-Completing this trivia app will give you the ability to structure plan, implement, and test an API - skills essential for enabling your future applications to communicate with others. 
 
-## Tasks
+## API Reference
 
-There are `TODO` comments throughout project. Start by reading the READMEs in:
+Base URL: This app can only be run locally. The default address is localhost:3000/.
 
-1. [`./frontend/`](./frontend/README.md)
-2. [`./backend/`](./backend/README.md)
+### GET /categories
 
-We recommend following the instructions in those files in order. This order will look familiar from our prior work in the course.
+Fetches the complete list of all categories of trivia questions.
+Arguments: none
+Returns: an object with a categories key, the value of which is a dictionay containing the category ids mapped to the respective category name.
+{
+    "categories": {
+        "1": "Science",
+        "2": "Art"
+    },
+    "success": true
+}
 
-## Starting and Submitting the Project
+### GET /questions
 
-[Fork](https://help.github.com/en/articles/fork-a-repo) the [project repository]() and [Clone](https://help.github.com/en/articles/cloning-a-repository) your forked repository to your machine. Work on the project locally and make sure to push all your changes to the remote repository before submitting the link to your repository in the Classroom. 
+Fetches all questions.
+Arguments: page (int)
+Returns: an object containing three fields: questions, total_questions, and categories. See the GET /categories endpoint for the structure of the categories field. The total_questions field is simply the number of all questions. The questions field contains a paginated list of 10 questions. Each question includes fields for the question id, question text, answer, difficulty, and category id.
+{
+    "total_questions": 2,
+    "categories": {
+        "1": "Science"
+    },
+    "questions": [
+        {
+            "id": 1,
+            "question": "What?",
+            "answer": "Yes",
+            "difficulty": 4,
+            "category": 1
+        }
+    ]
+    "success": true
+}
 
-## About the Stack
+### DELETE /questions/{question_id}
 
-We started the full stack application for you. It is desiged with some key functional areas:
+Deletes the question with the specified id.
+Arguments: none
+Returns: an object that contains only the success field.
+{
+    "success": true
+}
 
-### Backend
+### POST /add
 
-The `./backend` directory contains a partially completed Flask and SQLAlchemy server. You will work primarily in app.py to define your endpoints and can reference models.py for DB and SQLAlchemy setup. 
+Creates a new question using the submitted data.
+Arguments: In the data field of the request, an object should contain the question text (question), answer text (answer), difficulty, and category id (category).
+Returns: an object that contains only the success field.
+{
+"success": true
+}
 
-### Frontend
+### POST /questions
 
-The `./frontend` directory contains a complete React frontend to consume the data from the Flask server. You will need to update the endpoints after you define them in the backend. Those areas are marked with TODO and can be searched for expediency. 
+Searches question texts for the specified search term.
+Arguments: In the data field of the request, an object should contain the search term (searchTerm).
+Returns: an object that contains the relevant questions (using the same formatting specifid in GET /questions) and the number of relevant questions.
+{
+    "success": true,
+    "total_questions": 1,
+    "questions": [
+        {
+            "id": 1,
+            "question": "What?",
+            "answer": "Yes",
+            "difficulty": 2,
+            "category": 1
+        }
+    ]
+}
 
-Pay special attention to what data the frontend is expecting from each API response to help guide how you format your API. 
+### GET /categories/{category_id}/questions
 
-[View the README.md within ./frontend for more details.](./frontend/README.md)
+Gets all questions in the specified category.
+Arguments: none
+Returns: an object with the same structure as POST /questions.
+
+### POST /quizzes
+
+Gets the next question when playing a quiz.
+Arguments: In the data field of the request, an object containing fields for quiz_category and previous_questions. The quiz_category field is an object that must contain a field for id (which denotes the specific category, use 0 if no category is selected.) The previous_questions field is a list containing the ids of questions that have been previously answered.
+Returns: an object that contains a question field. This question field uses the same question formatting.
+{
+    "success": true,
+    "question": {
+        "question": "What?",
+        "answer": "Yes",
+        "difficulty": 2,
+        "category": 1
+    }
+}
+
+### Error Handling
+Errors are returned as JSON objects in the following format:
+{
+    "success": false,
+    "error": 400,
+    "message": "Bad request."
+}
