@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from flask_cors import CORS
 import random
 
@@ -59,7 +60,7 @@ def create_app(test_config=None):
     except:
       abort(400)
     
-    query = Question.query.filter(Question.question.contains(search_term)).all()
+    query = Question.query.filter(func.lower(Question.question).contains(func.lower(search_term))).all()
     formatted_questions = [question.format() for question in query]
 
     return jsonify({
@@ -119,11 +120,11 @@ def create_app(test_config=None):
       abort(400)
 
     if category_id == 0:
-      question = Question.query.filter(~Question.id.in_(previous_questions)).first()
+      question = Question.query.filter(~Question.id.in_(previous_questions)).order_by(func.random()).first()
       if question is None:
         abort(404)
     else:
-      question = Question.query.filter_by(category=category_id).filter(~Question.id.in_(previous_questions)).first()
+      question = Question.query.filter_by(category=category_id).filter(~Question.id.in_(previous_questions)).order_by(func.random()).first()
 
     if question:
       question = question.format()
