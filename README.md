@@ -1,11 +1,14 @@
 # Full Stack Udacity Project 2: Trivia
 
-## Usage
-CD into the backend folder. Create a virtual environment and install the required backend dependencies by running ```pip install -r requirements.txt```. Restore a database with psql running by running ```psql trivia < trivia.psql```. Then run these commands to run the server:
+A basic trivia app. Project 2 in the Full Stack Udacity nanodegree.
 
-```export FLASK_APP=flaskr
-export FLASK_ENV=development
-flask run
+## Usage
+CD into the backend folder. Create a virtual environment and install the required backend dependencies by running ```$ pip install -r requirements.txt```. Restore a database with psql running by running ```$ psql trivia < trivia.psql```. You must set environment variables for DB_USER and DB_PASS. Then run these commands to run the server:
+
+```
+$ export FLASK_APP=flaskr
+$ export FLASK_ENV=development
+$ flask run
 ```
 
 In another terminal, cd into the frontend folder. Install the required dependencies by running ```npm install```. Then start the client by running ```npm start```.
@@ -22,6 +25,7 @@ Base URL: This app can only be run locally. The default address is localhost:300
 Fetches the complete list of all categories of trivia questions.
 Arguments: none
 Returns: an object with a categories key, the value of which is a dictionay containing the category ids mapped to the respective category name.
+```
 {
     "categories": {
         "1": "Science",
@@ -29,6 +33,7 @@ Returns: an object with a categories key, the value of which is a dictionay cont
     },
     "success": true
 }
+```
 
 ### GET /questions
 
