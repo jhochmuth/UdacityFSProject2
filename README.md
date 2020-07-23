@@ -40,6 +40,7 @@ Returns: an object with a categories key, the value of which is a dictionay cont
 Fetches all questions.
 Arguments: page (int)
 Returns: an object containing three fields: questions, total_questions, and categories. See the GET /categories endpoint for the structure of the categories field. The total_questions field is simply the number of all questions. The questions field contains a paginated list of 10 questions. Each question includes fields for the question id, question text, answer, difficulty, and category id.
+```
 {
     "total_questions": 2,
     "categories": {
@@ -56,30 +57,36 @@ Returns: an object containing three fields: questions, total_questions, and cate
     ]
     "success": true
 }
+```
 
 ### DELETE /questions/{question_id}
 
 Deletes the question with the specified id.
 Arguments: none
 Returns: an object that contains only the success field.
+```
 {
     "success": true
 }
+```
 
 ### POST /add
 
 Creates a new question using the submitted data.
 Arguments: In the data field of the request, an object should contain the question text (question), answer text (answer), difficulty, and category id (category).
 Returns: an object that contains only the success field.
+```
 {
 "success": true
 }
+```
 
 ### POST /questions
 
 Searches question texts for the specified search term.
 Arguments: In the data field of the request, an object should contain the search term (searchTerm).
 Returns: an object that contains the relevant questions (using the same formatting specifid in GET /questions) and the number of relevant questions.
+```
 {
     "success": true,
     "total_questions": 1,
@@ -93,18 +100,35 @@ Returns: an object that contains the relevant questions (using the same formatti
         }
     ]
 }
+```
 
 ### GET /categories/{category_id}/questions
 
 Gets all questions in the specified category.
 Arguments: none
 Returns: an object with the same structure as POST /questions.
+```
+{
+    "success": true,
+    "total_questions": 1,
+    "questions": [
+        {
+            "id": 1,
+            "question": "What?",
+            "answer": "Yes",
+            "difficulty": 2,
+            "category": 1
+        }
+    ]
+}
+```
 
 ### POST /quizzes
 
 Gets the next question when playing a quiz.
 Arguments: In the data field of the request, an object containing fields for quiz_category and previous_questions. The quiz_category field is an object that must contain a field for id (which denotes the specific category, use 0 if no category is selected.) The previous_questions field is a list containing the ids of questions that have been previously answered.
 Returns: an object that contains a question field. This question field uses the same question formatting.
+```
 {
     "success": true,
     "question": {
@@ -114,11 +138,14 @@ Returns: an object that contains a question field. This question field uses the 
         "category": 1
     }
 }
+```
 
 ### Error Handling
 Errors are returned as JSON objects in the following format:
+```
 {
     "success": false,
     "error": 400,
     "message": "Bad request."
 }
+```
